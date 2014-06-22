@@ -1,3 +1,4 @@
 .build-ffmpeg-config.sh
+ffmpeg-configure.patch
 src/
 build/

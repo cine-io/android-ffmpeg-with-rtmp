@@ -1,0 +1,25 @@
+--- configure.orig	2014-06-21 19:30:32.000000000 -0700
++++ configure	2014-06-21 19:36:23.000000000 -0700
+@@ -2668,10 +2668,10 @@
+ SLIBSUF=".so"
+ SLIBNAME='$(SLIBPREF)$(FULLNAME)$(SLIBSUF)'
+ SLIBNAME_WITH_VERSION='$(SLIBNAME).$(LIBVERSION)'
+-SLIBNAME_WITH_MAJOR='$(SLIBNAME).$(LIBMAJOR)'
++SLIBNAME_WITH_MAJOR='$(SLIBPREF)$(FULLNAME)-$(LIBMAJOR)$(SLIBSUF)'
+ LIB_INSTALL_EXTRA_CMD='$$(RANLIB) "$(LIBDIR)/$(LIBNAME)"'
+-SLIB_INSTALL_NAME='$(SLIBNAME_WITH_VERSION)'
+-SLIB_INSTALL_LINKS='$(SLIBNAME_WITH_MAJOR) $(SLIBNAME)'
++SLIB_INSTALL_NAME='$(SLIBNAME_WITH_MAJOR)'
++SLIB_INSTALL_LINKS='$(SLIBNAME)'
+ 
+ asflags_filter=echo
+ cflags_filter=echo
+@@ -4718,7 +4718,7 @@
+ enabled libopus           && require_pkg_config opus opus_multistream.h opus_multistream_decoder_create
+ enabled libpulse          && require_pkg_config libpulse-simple pulse/simple.h pa_simple_new
+ enabled libquvi           && require_pkg_config libquvi quvi/quvi.h quvi_init
+-enabled librtmp           && require_pkg_config librtmp librtmp/rtmp.h RTMP_Socket
++enabled librtmp           && require librtmp librtmp/rtmp.h RTMP_Socket -L${builder_root}/src/rtmpdump/librtmp/android/arm/lib -lrtmp
+ enabled libschroedinger   && require_pkg_config schroedinger-1.0 schroedinger/schro.h schro_init
+ enabled libshine          && require_pkg_config shine shine/layer3.h shine_encode_buffer
+ enabled libsoxr           && require libsoxr soxr.h soxr_create -lsoxr
