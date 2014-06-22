@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -O extglob
 
 function setup {
   set -e  # fail hard on any error
@@ -8,6 +8,7 @@ function setup {
   build_log=${builder_root}/build/build-ffmpeg.log
   config_file=${builder_root}/.build-ffmpeg-config.sh
 
+  rm -f ${build_log}
 
   if [ ! -f "${builder_root}/.build-ffmpeg-config.sh" ]; then
     # determine OS and architecture
@@ -58,16 +59,17 @@ function ensure_folder_structure {
   cd ${builder_root}
   test -d ${builder_root}/src || mkdir -p ${builder_root}/src
   test -d ${builder_root}/build || mkdir -p ${builder_root}/build/libs
+  touch ${build_log}
 }
 
 function build_openssl {
   echo "Building openssl-android ..."
   ensure_folder_structure
   test -d ${builder_root}/src/openssl-android || \
-    git clone git@github.com:eighthave/openssl-android.git ${builder_root}/src/openssl-android > ${build_log} 2>&1 || \
+    git clone git@github.com:eighthave/openssl-android.git ${builder_root}/src/openssl-android >> ${build_log} 2>&1 || \
     die "Couldn't clone openssl-android repository!"
   cd ${builder_root}/src/openssl-android
-  ${NDK}/ndk-build > ${build_log} 2>&1 || die "Couldn't build openssl-android!"
+  ${NDK}/ndk-build >> ${build_log} 2>&1 || die "Couldn't build openssl-android!"
   cd ${builder_root}
 }
 
@@ -75,7 +77,7 @@ function build_librtmp {
   echo "Building librtmp for android ..."
   ensure_folder_structure
   test -d src/rtmpdump || \
-    git clone git://git.ffmpeg.org/rtmpdump ${builder_root}/src/rtmpdump > ${build_log} 2>&1 || \
+    git clone git://git.ffmpeg.org/rtmpdump ${builder_root}/src/rtmpdump >> ${build_log} 2>&1 || \
     die "Couldn't clone rtmpdump repository!"
 
   cd ${builder_root}/src/rtmpdump/librtmp
@@ -83,14 +85,15 @@ function build_librtmp {
   openssl_dir=${builder_root}/src/openssl-android
   prefix=${builder_root}/src/rtmpdump/librtmp/android/arm
   addi_cflags="-marm"
+  addi_ldflags=""
 
   test -L "crtbegin_so.o" || ln -s ${SYSROOT}/usr/lib/crtbegin_so.o
   test -L "crtend_so.o" || ln -s ${SYSROOT}/usr/lib/crtend_so.o
-  export XLDFLAGS="$addi_ldflags -L${openssl_dir}/libs/armeabi -L${SYSROOT}/usr/lib "
+  export XLDFLAGS="$addi_ldflags -L${openssl_dir}/libs/armeabi -L${SYSROOT}/usr/lib"
   export CROSS_COMPILE=${TOOLCHAIN}/bin/arm-linux-androideabi-
   export XCFLAGS="${addi_cflags} -I${openssl_dir}/include -isysroot ${SYSROOT}"
   export INC="-I${SYSROOT}"
-  make prefix=\"${prefix}\" OPT= install > ${build_log} 2>&1 || \
+  make prefix=\"${prefix}\" OPT= install >> ${build_log} 2>&1 || \
     die "Couldn't build librtmp for android!"
   cd ${builder_root}
 }
@@ -102,16 +105,15 @@ function build_ffmpeg {
   # download ffmpeg
   ffmpeg_archive=${builder_root}/src/ffmpeg-snapshot.tar.bz2
   if [ ! -f "${ffmpeg_archive}" ]; then
-    echo "DOWNLOADING"
     test -x "$(which curl)" || die "You must install curl!"
-    curl -s http://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2 -o ${ffmpeg_archive} > ${build_log} 2>&1 || \
+    curl -s http://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2 -o ${ffmpeg_archive} >> ${build_log} 2>&1 || \
       die "Couldn't download ffmpeg sources!"
   fi
 
   # extract ffmpeg
   if [ ! -d "${builder_root}/src/ffmpeg" ]; then
     cd ${builder_root}/src
-    tar xvfj ${ffmpeg_archive} > ${build_log} 2>&1 || die "Couldn't extract ffmpeg sources!"
+    tar xvfj ${ffmpeg_archive} >> ${build_log} 2>&1 || die "Couldn't extract ffmpeg sources!"
   fi
 
   # create a patch for ffmpeg's configure script using the patch template
@@ -126,12 +128,16 @@ function build_ffmpeg {
   cd ${builder_root}/src/ffmpeg
   prefix=${builder_root}/src/ffmpeg/android/arm
   addi_cflags="-marm"
+  addi_ldflags=""
   export PKG_CONFIG_PATH="${builder_root}/src/openssl-android:${builder_root}/src/rtmpdump/librtmp"
   ./configure \
     --prefix=${prefix} \
     --enable-shared \
     --disable-static \
     --disable-doc \
+    --disable-ffplay \
+    --disable-ffprobe \
+    --disable-ffserver \
     --disable-symver \
     --cross-prefix=${TOOLCHAIN}/bin/arm-linux-androideabi- \
     --target-os=linux \
@@ -140,13 +146,40 @@ function build_ffmpeg {
     --enable-librtmp \
     --sysroot=${SYSROOT} \
     --extra-cflags="-Os -fpic ${addi_cflags}" \
-    --extra-ldflags="-L${builder_root}/src/openssl-android/libs/armeabi" \
-    --pkg-config=$(which pkg-config) > ${build_log} 2>&1 || die "Couldn't configure ffmpeg!"
+    --extra-ldflags="-L${builder_root}/src/openssl-android/libs/armeabi ${addi_ldflags}" \
+    --pkg-config=$(which pkg-config) >> ${build_log} 2>&1 || die "Couldn't configure ffmpeg!"
 
   # build
-  make
-  make install
+  make >> ${build_log} 2>&1 || die "Couldn't build ffmpeg!"
+  make install >> ${build_log} 2>&1 || die "Couldn't install ffmpeg!"
 
+  cd ${builder_root}
+}
+
+function gather_binaries {
+  echo "Gathering binaries ..."
+  ensure_folder_structure
+
+  outdir="${builder_root}/build/binaries"
+  mkdir -p ${outdir}
+
+  # copy the versioned libraries
+  libdirs="${builder_root}/src/openssl-android/libs/armeabi ${builder_root}/src/rtmpdump/librtmp/android/arm/lib ${builder_root}/src/ffmpeg/android/arm/lib"
+  for d in ${libdirs}; do
+    for f in ${d}/lib*.so.+([0-9]); do
+      test -f ${f} && cp ${f} ${outdir}/.
+    done
+  done
+
+  # copy the executables
+  bindirs="${builder_root}/src/ffmpeg/android/arm/bin"
+  for d in ${bindirs}; do
+    for f in ${d}/*; do
+      test -x ${f} && cp ${f} ${outdir}/.
+    done
+  done
+
+  echo "Look in ${outdir} for libraries and executables."
   cd ${builder_root}
 }
 
@@ -156,3 +189,4 @@ setup
 build_openssl
 build_librtmp
 build_ffmpeg
+gather_binaries
