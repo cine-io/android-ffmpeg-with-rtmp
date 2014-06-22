@@ -68,6 +68,7 @@ function build_openssl {
     die "Couldn't clone openssl-android repository!"
   cd ${builder_root}/src/openssl-android
   ${NDK}/ndk-build > ${build_log} 2>&1 || die "Couldn't build openssl-android!"
+  cd ${builder_root}
 }
 
 function build_librtmp {
@@ -91,11 +92,32 @@ function build_librtmp {
   export INC="-I${SYSROOT}"
   make prefix=\"${prefix}\" OPT= install > ${build_log} 2>&1 || \
     die "Couldn't build librtmp for android!"
+  cd ${builder_root}
 }
 
 function build_ffmpeg {
   echo "Building ffmpeg for android ..."
   ensure_folder_structure
+
+  ffmpeg_archive=${builder_root}/src/ffmpeg-snapshot.tar.bz2
+  if [ ! -f "${ffmpeg_archive}" ]; then
+    test -x "$(which curl)" || die "You must install curl!"
+    curl -s http://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2 -o ${ffmpeg_archive} > ${build_log} 2>&1 || \
+      die "Couldn't download ffmpeg sources!"
+  fi
+
+  if [ ! -d "${builder_root}src/ffmpeg" ]; then
+    cd ${builder_root}/src
+    tar xvfj ${ffmpeg_archive} > ${build_log} 2>&1 || die "Couldn't extract ffmpeg sources!"
+  fi
+
+  rm ${builder_root}/ffmpeg-configure.patch
+  touch ${builder_root}/ffmpeg-configure.patch
+  export builder_root
+  cat ${builder_root}/ffmpeg-configure.patch-template |  \
+    while read line ; do eval echo "$line" >> ${builder_root}/ffmpeg-configure.patch ; done
+
+  cd ${builder_root}
 }
 
 #-- main
