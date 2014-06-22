@@ -102,23 +102,50 @@ function build_ffmpeg {
   # download ffmpeg
   ffmpeg_archive=${builder_root}/src/ffmpeg-snapshot.tar.bz2
   if [ ! -f "${ffmpeg_archive}" ]; then
+    echo "DOWNLOADING"
     test -x "$(which curl)" || die "You must install curl!"
     curl -s http://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2 -o ${ffmpeg_archive} > ${build_log} 2>&1 || \
       die "Couldn't download ffmpeg sources!"
   fi
 
   # extract ffmpeg
-  if [ ! -d "${builder_root}src/ffmpeg" ]; then
+  if [ ! -d "${builder_root}/src/ffmpeg" ]; then
     cd ${builder_root}/src
     tar xvfj ${ffmpeg_archive} > ${build_log} 2>&1 || die "Couldn't extract ffmpeg sources!"
   fi
 
   # create a patch for ffmpeg's configure script using the patch template
-  rm ${builder_root}/ffmpeg-configure.patch
-  touch ${builder_root}/ffmpeg-configure.patch
-  export builder_root
-  cat ${builder_root}/ffmpeg-configure.patch-template |  \
-    while read line ; do echo $(eval echo \"$line\") >> ${builder_root}/ffmpeg-configure.patch ; done
+  # rm ${builder_root}/ffmpeg-configure.patch
+  # touch ${builder_root}/ffmpeg-configure.patch
+  # cat ${builder_root}/ffmpeg-configure.patch-template |  \
+  #   while read line ; do
+  #     echo $(eval echo \"$line\") >> ${builder_root}/ffmpeg-configure.patch
+  #   done
+
+  # run the configure script
+  cd ${builder_root}/src/ffmpeg
+  prefix=${builder_root}/src/ffmpeg/android/arm
+  addi_cflags="-marm"
+  export PKG_CONFIG_PATH="${builder_root}/src/openssl-android:${builder_root}/src/rtmpdump/librtmp"
+  ./configure \
+    --prefix=${prefix} \
+    --enable-shared \
+    --disable-static \
+    --disable-doc \
+    --disable-symver \
+    --cross-prefix=${TOOLCHAIN}/bin/arm-linux-androideabi- \
+    --target-os=linux \
+    --arch=arm \
+    --enable-cross-compile \
+    --enable-librtmp \
+    --sysroot=${SYSROOT} \
+    --extra-cflags="-Os -fpic ${addi_cflags}" \
+    --extra-ldflags="-L${builder_root}/src/openssl-android/libs/armeabi" \
+    --pkg-config=$(which pkg-config) > ${build_log} 2>&1 || die "Couldn't configure ffmpeg!"
+
+  # build
+  make
+  make install
 
   cd ${builder_root}
 }
