@@ -2,9 +2,11 @@
 
 This repository contains script(s) to build ffmpeg for android with RTMP (and OpenSSL) support.
 
-## WORK IN PROGRESS
+## Status
 
-THIS IS NOT YET WORKING -- you've been warned!
+This should successfully build ffmpeg for android. I haven't done much testing yet, however.
+
+**YOU'VE BEEN WARNED.**
 
 ## Instructions
 
