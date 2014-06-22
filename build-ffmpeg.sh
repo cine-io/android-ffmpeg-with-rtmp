@@ -58,7 +58,8 @@ function ensure_folder_structure {
   # create our src and build directory
   cd ${builder_root}
   test -d ${builder_root}/src || mkdir -p ${builder_root}/src
-  test -d ${builder_root}/build || mkdir -p ${builder_root}/build/libs
+  test -d ${builder_root}/build || mkdir -p ${builder_root}/build
+  test -d ${builder_root}/build/binaries || mkdir -p ${builder_root}/build/binaries
   touch ${build_log}
 }
 
@@ -160,14 +161,11 @@ function gather_binaries {
   echo "Gathering binaries ..."
   ensure_folder_structure
 
-  outdir="${builder_root}/build/binaries"
-  mkdir -p ${outdir}
-
   # copy the versioned libraries
   libdirs="${builder_root}/src/openssl-android/libs/armeabi ${builder_root}/src/rtmpdump/librtmp/android/arm/lib ${builder_root}/src/ffmpeg/android/arm/lib"
   for d in ${libdirs}; do
     for f in ${d}/lib*.so.+([0-9]); do
-      test -f ${f} && cp ${f} ${outdir}/.
+      test -f ${f} && cp ${f} ${builder_root}/build/binaries/.
     done
   done
 
@@ -175,11 +173,11 @@ function gather_binaries {
   bindirs="${builder_root}/src/ffmpeg/android/arm/bin"
   for d in ${bindirs}; do
     for f in ${d}/*; do
-      test -x ${f} && cp ${f} ${outdir}/.
+      test -x ${f} && cp ${f} ${builder_root}/build/binaries/.
     done
   done
 
-  echo "Look in ${outdir} for libraries and executables."
+  echo "Look in ${builder_root}/build/binaries for libraries and executables."
   cd ${builder_root}
 }
 
