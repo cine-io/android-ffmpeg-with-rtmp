@@ -5,8 +5,11 @@ This repository contains script(s) to build ffmpeg for android with RTMP (and Op
 ## Instructions
 
 1. Install the [Android NDK][android-ndk].
-2. Clone this repository.
-3. Run `build-ffmpeg.sh`.
+2. Ensure that [cURL][cURL] is installed.
+3. Clone this repository.
+4. Run `build-ffmpeg.sh`.
+
+For example:
 
 ```bash
 $ git clone git@github.com:cine-io/android-ffmpeg-with-rtmp.git
@@ -39,3 +42,4 @@ Inspired by: [openssl-android][openssl-android] and [FFmpeg-Android][FFmpeg-Andr
 [openssl-android]:https://github.com/guardianproject/openssl-android
 [FFmpeg-Android]:https://github.com/OnlyInAmerica/FFmpeg-Android
 [android-ndk]:https://developer.android.com/tools/sdk/ndk/index.html
+[cURL]:http://curl.haxx.se/
