@@ -2,27 +2,21 @@
 
 This repository contains script(s) to build ffmpeg for android with RTMP (and OpenSSL) support.
 
-## Status
-
-This should successfully build ffmpeg for android. I haven't done much testing yet, however.
-
-**YOU'VE BEEN WARNED.**
-
 ## Instructions
 
 1. Install the [Android NDK][android-ndk].
 2. Ensure that [cURL][cURL] is installed.
-3. Clone this repository.
-4. Run `build-ffmpeg.sh`.
-5. Look in `build/binaries` for the resulting libraries and executables.
-6. Look in `build/build-ffmpeg.log` if something goes wrong.
+3. Clone this repository and `cd` into its directory.
+4. Run `build.sh`.
+5. Look in `build/dist` for the resulting libraries and executables.
+6. Look in `build/build.log` if something goes wrong.
 
 For example:
 
 ```bash
 $ git clone git@github.com:cine-io/android-ffmpeg-with-rtmp.git
 $ cd android-ffmpeg-with-rtmp
-$ ./build-ffmpeg.sh
+$ ./build.sh
 ```
 
 ## Notes
@@ -31,14 +25,14 @@ The first time you run the script, it will try to find the location where
 you've installed the NDK. It will also try to auto-detect your operating
 system and architecture. This process might take a minute or two, so the
 information will be saved into a configuration file called
-`.build-ffmpeg-config.sh` which will be used on subsequent executions of
+`.build-config.sh` which will be used on subsequent executions of
 the script.
 
 The script is meant to be idempotent. However, should you want to start over
 from scratch, it's a simple matter of:
 
 ```bash
-$ \rm -rf src build .build-ffmpeg-config.sh
+$ \rm -rf src build .build-config.sh
 $ ./build-ffmpeg.sh
 ```
 

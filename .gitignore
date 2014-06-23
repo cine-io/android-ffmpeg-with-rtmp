@@ -1,4 +1,4 @@
 .DS_Store
-.build-ffmpeg-config.sh
+.build-config.sh
 src/
 build/
