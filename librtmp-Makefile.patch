@@ -1,0 +1,11 @@
+--- Makefile.orig	2014-06-22 18:53:01.000000000 -0700
++++ Makefile	2014-06-22 18:53:15.000000000 -0700
+@@ -43,7 +43,7 @@
+ SOX_darwin=dylib
+ SOX_mingw=dll
+ SOX=$(SOX_$(SYS))
+-SO_posix=.$(SOX).$(SO_VERSION)
++SO_posix=-$(SO_VERSION).$(SOX)
+ SO_darwin=.$(SO_VERSION).$(SOX)
+ SO_mingw=-$(SO_VERSION).$(SOX)
+ SO_EXT=$(SO_$(SYS))

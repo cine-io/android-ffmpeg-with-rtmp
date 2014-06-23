@@ -66,11 +66,16 @@ function ensure_folder_structure {
 function build_openssl {
   echo "Building openssl-android ..."
   ensure_folder_structure
+
   test -d ${builder_root}/src/openssl-android || \
     git clone git@github.com:eighthave/openssl-android.git ${builder_root}/src/openssl-android >> ${build_log} 2>&1 || \
     die "Couldn't clone openssl-android repository!"
   cd ${builder_root}/src/openssl-android
   ${NDK}/ndk-build >> ${build_log} 2>&1 || die "Couldn't build openssl-android!"
+
+  # copy the versioned libraries and executables
+  cp ${builder_root}/src/openssl-android/libs/armeabi/* ${builder_root}/build/binaries/.
+
   cd ${builder_root}
 }
 
@@ -82,6 +87,10 @@ function build_librtmp {
     die "Couldn't clone rtmpdump repository!"
 
   cd ${builder_root}/src/rtmpdump/librtmp
+
+  # patch the Makefile to use an Android-friendly versioning scheme
+  patch -u Makefile ${builder_root}/librtmp-Makefile.patch >> ${build_log} 2>&1 || \
+    die "Couldn't patch librtmp Makefile!"
 
   openssl_dir=${builder_root}/src/openssl-android
   prefix=${builder_root}/src/rtmpdump/librtmp/android/arm
@@ -96,6 +105,10 @@ function build_librtmp {
   export INC="-I${SYSROOT}"
   make prefix=\"${prefix}\" OPT= install >> ${build_log} 2>&1 || \
     die "Couldn't build librtmp for android!"
+
+  # copy the versioned libraries
+  cp ${builder_root}/src/rtmpdump/librtmp/android/arm/lib/lib*-+([0-9]).so ${builder_root}/build/binaries/.
+
   cd ${builder_root}
 }
 
@@ -125,8 +138,13 @@ function build_ffmpeg {
   #     echo $(eval echo \"$line\") >> ${builder_root}/ffmpeg-configure.patch
   #   done
 
-  # run the configure script
   cd ${builder_root}/src/ffmpeg
+
+  # patch the configure script to use an Android-friendly versioning scheme
+  patch -u configure ${builder_root}/ffmpeg-configure.patch >> ${build_log} 2>&1 || \
+    die "Couldn't patch ffmpeg configure script!"
+
+  # run the configure script
   prefix=${builder_root}/src/ffmpeg/android/arm
   addi_cflags="-marm"
   addi_ldflags=""
@@ -154,30 +172,11 @@ function build_ffmpeg {
   make >> ${build_log} 2>&1 || die "Couldn't build ffmpeg!"
   make install >> ${build_log} 2>&1 || die "Couldn't install ffmpeg!"
 
-  cd ${builder_root}
-}
+  # copy the versioned libraries and executables
+  # lib*.so.+([0-9])
+  cp ${builder_root}/src/ffmpeg/android/arm/lib/lib*-+([0-9]).so ${builder_root}/build/binaries/.
+  cp ${builder_root}/src/ffmpeg/android/arm/bin/ff* ${builder_root}/build/binaries/.
 
-function gather_binaries {
-  echo "Gathering binaries ..."
-  ensure_folder_structure
-
-  # copy the versioned libraries
-  libdirs="${builder_root}/src/openssl-android/libs/armeabi ${builder_root}/src/rtmpdump/librtmp/android/arm/lib ${builder_root}/src/ffmpeg/android/arm/lib"
-  for d in ${libdirs}; do
-    for f in ${d}/lib*.so.+([0-9]); do
-      test -f ${f} && cp ${f} ${builder_root}/build/binaries/.
-    done
-  done
-
-  # copy the executables
-  bindirs="${builder_root}/src/ffmpeg/android/arm/bin"
-  for d in ${bindirs}; do
-    for f in ${d}/*; do
-      test -x ${f} && cp ${f} ${builder_root}/build/binaries/.
-    done
-  done
-
-  echo "Look in ${builder_root}/build/binaries for libraries and executables."
   cd ${builder_root}
 }
 
@@ -187,4 +186,5 @@ setup
 build_openssl
 build_librtmp
 build_ffmpeg
-gather_binaries
+
+echo "Look in ${builder_root}/build/binaries for libraries and executables."
