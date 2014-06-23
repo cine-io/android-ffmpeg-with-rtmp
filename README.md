@@ -32,7 +32,7 @@ The script is meant to be idempotent. However, should you want to start over
 from scratch, it's a simple matter of:
 
 ```bash
-$ \rm -rf src build .build-config.sh
+$ rm -rf src build .build-config.sh
 $ ./build-ffmpeg.sh
 ```
 
