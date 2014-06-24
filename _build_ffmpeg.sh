@@ -52,7 +52,7 @@ function build_ffmpeg {
   # copy the versioned libraries
   cp ${prefix}/lib/lib*-+([0-9]).so ${dist_lib_root}/.
   # copy the executables
-   cp ${prefix}/bin/ff* ${dist_bin_root}/.
+  cp ${prefix}/bin/ff* ${dist_bin_root}/.
   # copy the headers
   cp -r ${prefix}/include/* ${dist_include_root}/.
 
