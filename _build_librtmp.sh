@@ -26,7 +26,9 @@ function build_librtmp {
     die "Couldn't build librtmp for android!"
 
   # copy the versioned libraries
-  cp ${src_root}/rtmpdump/librtmp/android/arm/lib/lib*-+([0-9]).so ${dist_root}/.
+  cp ${prefix}/lib/lib*-+([0-9]).so ${dist_lib_root}/.
+  # copy the headers
+  cp -r ${prefix}/include/* ${dist_include_root}/.
 
   cd ${top_root}
 }

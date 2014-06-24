@@ -1,0 +1,4 @@
+rtmp://www.planeta-online.tv:1936/live/channel_4
+rtmp://stream.lax.cine.io/20C45E/cines/cine20?prelude49&amp;adbe-live-event=cine20
+
+ffmpeg -i rtmp://www.planeta-online.tv:1936/live/channel_4 -acodec copy -vcodec copy -f flv rtmp://stream.lax.cine.io/20C45E/cines/cine20?prelude49\&amp;adbe-live-event=cine20

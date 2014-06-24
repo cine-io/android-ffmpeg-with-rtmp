@@ -41,6 +41,9 @@ function initialize {
   build_root=${top_root}/build
   patch_root=${top_root}/patches
   dist_root=${top_root}/build/dist
+  dist_bin_root=${dist_root}/bin
+  dist_include_root=${dist_root}/include
+  dist_lib_root=${dist_root}/lib
   build_log=${top_root}/build/build.log
   config_file=${top_root}/.build-config.sh
 
@@ -49,6 +52,9 @@ function initialize {
   test -d ${src_root} || mkdir -p ${src_root}
   test -d ${build_root} || mkdir -p ${build_root}
   test -d ${dist_root} || mkdir -p ${dist_root}
+  test -d ${dist_bin_root} || mkdir -p ${dist_bin_root}
+  test -d ${dist_include_root} || mkdir -p ${dist_include_root}
+  test -d ${dist_lib_root} || mkdir -p ${dist_lib_root}
   touch ${build_log}
 
   rm -f ${build_log}

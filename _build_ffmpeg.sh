@@ -49,10 +49,12 @@ function build_ffmpeg {
   make >> ${build_log} 2>&1 || die "Couldn't build ffmpeg!"
   make install >> ${build_log} 2>&1 || die "Couldn't install ffmpeg!"
 
-  # copy the versioned libraries and executables
-  # lib*.so.+([0-9])
-  cp ${src_root}/ffmpeg/android/arm/lib/lib*-+([0-9]).so ${dist_root}/.
-  cp ${src_root}/ffmpeg/android/arm/bin/ff* ${dist_root}/.
+  # copy the versioned libraries
+  cp ${prefix}/lib/lib*-+([0-9]).so ${dist_lib_root}/.
+  # copy the executables
+   cp ${prefix}/bin/ff* ${dist_bin_root}/.
+  # copy the headers
+  cp -r ${prefix}/include/* ${dist_include_root}/.
 
   cd ${top_root}
 }
