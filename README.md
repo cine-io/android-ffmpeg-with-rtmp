@@ -33,7 +33,7 @@ from scratch, it's a simple matter of:
 
 ```bash
 $ rm -rf src build .build-config.sh
-$ ./build-ffmpeg.sh
+$ ./build.sh
 ```
 
 ## Acknowledgements
