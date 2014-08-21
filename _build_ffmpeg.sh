@@ -40,6 +40,7 @@ function build_ffmpeg {
     --arch=arm \
     --enable-cross-compile \
     --enable-librtmp \
+    --enable-decoder=h264 \
     --sysroot=${SYSROOT} \
     --extra-cflags="-Os -fpic ${addi_cflags}" \
     --extra-ldflags="-L${src_root}/openssl-android/libs/armeabi ${addi_ldflags}" \
