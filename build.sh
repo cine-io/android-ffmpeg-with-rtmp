@@ -1,4 +1,7 @@
-#!/bin/bash -O extglob
+#!/bin/bash
+
+# use extended globbing features
+shopt -s extglob
 
 # import our build functions
 source _build_openssl.sh
