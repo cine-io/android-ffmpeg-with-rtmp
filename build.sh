@@ -22,7 +22,7 @@ function die {
 
 #-- try to intelligently determine where the Android NDK is installed
 function find_ndk {
-  ndk_name="android-ndk-r9d"
+  ndk_name="android-ndk-r10"
   top_level_paths_to_search="/Users /Applications /usr"
   found_ndk=""
   for d in $top_level_paths_to_search; do
