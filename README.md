@@ -4,7 +4,7 @@ This repository contains script(s) to build ffmpeg for android with RTMP (and Op
 
 ## Instructions
 
-1. Install the [Android NDK][android-ndk].
+1. Install the [Android NDK][android-ndk] (tested with version r10).
 2. Ensure that [cURL][cURL] is installed.
 3. Clone this repository and `cd` into its directory.
 4. Run `build.sh`.
