@@ -38,12 +38,12 @@ function build_ffmpeg {
     --cross-prefix=${TOOLCHAIN}/bin/arm-linux-androideabi- \
     --target-os=linux \
     --arch=arm \
-    --enable-cross-compile \
-    --enable-librtmp \
+    --enable-cross-compile \  
     --enable-decoder=h264 \
     --sysroot=${SYSROOT} \
-    --extra-cflags="-Os -fpic ${addi_cflags}" \
-    --extra-ldflags="-L${src_root}/openssl-android/libs/armeabi ${addi_ldflags}" \
+    --extra-cflags="-Os -fpic ${addi_cflags} -L${dist_lib_root}" \
+    --extra-ldflags="-L${src_root}/openssl-android/libs/armeabi ${addi_ldflags}  -L${dist_lib_root}" \
+    --extra-libs="-lrtmp-1" \
     --pkg-config=$(which pkg-config) >> ${build_log} 2>&1 || die "Couldn't configure ffmpeg!"
 
   # build
